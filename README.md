@@ -2,17 +2,17 @@
 This is a golang interface of [hnswlib](https://github.com/nmslib/hnswlib). For more information, please follow [hnswlib](https://github.com/nmslib/hnswlib) and [Efficient and robust approximate nearest neighbor search using Hierarchical Navigable Small World graphs.](https://arxiv.org/abs/1603.09320).
 
 # Compile
-```
+```bash
 go get github.com/evan176/hnswgo
 cd go/src/github.com/evan176/hnswgo && make
 ```
 # Usages
 Specify environment before compiling golang
-```
+```bash
 export CGO_CXXFLAGS=-std=c++11
 ```
 
-```
+```go
 package main
 
 import (
