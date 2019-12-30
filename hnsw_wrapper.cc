@@ -5,15 +5,14 @@
 #include <thread>
 #include <atomic>
 
-
-HNSW initHNSW(int dim, unsigned long int max_elements, int M, int ef_construction, char stype) {
+HNSW initHNSW(int dim, unsigned long int max_elements, int M, int ef_construction, int rand_seed, char stype) {
   hnswlib::SpaceInterface<float> *space;
   if (stype == 'i') {
     space = new hnswlib::InnerProductSpace(dim);
   } else {
     space = new hnswlib::L2Space(dim);
   }
-  hnswlib::HierarchicalNSW<float> *appr_alg = new hnswlib::HierarchicalNSW<float>(space, max_elements, M, ef_construction, 0);
+  hnswlib::HierarchicalNSW<float> *appr_alg = new hnswlib::HierarchicalNSW<float>(space, max_elements, M, ef_construction, rand_seed);
   return (void*)appr_alg;
 }
 
@@ -43,10 +42,13 @@ int searchKnn(HNSW index, float *vec, int N, unsigned long int *result) {
   } catch (const std::exception& e) { 
     return 0;
   }
+
   int n = gt.size();
+  std::pair<float, hnswlib::labeltype> pair;
   for (int i = n - 1; i >= 0; i--) {
-    auto &result_tuple = gt.top();
-    *(result+i) = (unsigned long int) result_tuple.second;
+    pair = gt.top();
+    *(result+i) = pair.second;
+    gt.pop();
   }
   return n;
 }
