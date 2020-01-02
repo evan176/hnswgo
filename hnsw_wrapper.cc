@@ -1,6 +1,6 @@
 //hnsw_wrapper.cpp
 #include <iostream>
-#include "hnswlib/hnswlib/hnswlib.h"
+#include "hnswlib/hnswlib.h"
 #include "hnsw_wrapper.h"
 #include <thread>
 #include <atomic>

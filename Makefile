@@ -15,7 +15,7 @@ opt: build
 
 coverage: CXXFLAGS += -O0 -fno-inline -fprofile-arcs --coverage
 
-hnsw_wrapper.o: hnsw_wrapper.h hnsw_wrapper.cc hnswlib/hnswlib/*.h
+hnsw_wrapper.o: hnsw_wrapper.h hnsw_wrapper.cc hnswlib/*.h
 	$(CXX) $(CXXFLAGS) -c hnsw_wrapper.cc
 
 libhnsw.a: $(OBJS)
