@@ -52,3 +52,7 @@ int searchKnn(HNSW index, float *vec, int N, unsigned long int *result) {
   }
   return n;
 }
+
+void setEf(HNSW index, int ef) {
+    ((hnswlib::HierarchicalNSW<float>*)index)->ef_ = ef;
+}

@@ -7,6 +7,7 @@ package hnswgo
 // HNSW loadHNSW(char *location, int dim, char stype);
 // void addPoint(HNSW index, float *vec, unsigned long int label);
 // int searchKnn(HNSW index, float *vec, int N, unsigned long int *result);
+// void setEf(HNSW index, int ef);
 import "C"
 import (
 	"unsafe"
@@ -63,4 +64,8 @@ func (h *HNSW) SearchKNN(vector []float32, N int) []uint32 {
 		labels[i] = uint32(result[i])
 	}
 	return labels[:numResult]
+}
+
+func (h *HNSW) SetEf(ef int) {
+	C.setEf(h.index, C.int(ef))
 }
