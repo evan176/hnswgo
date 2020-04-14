@@ -7,7 +7,7 @@ extern "C" {
   HNSW loadHNSW(char *location, int dim, char stype);
   HNSW saveHNSW(HNSW index, char *location);
   void addPoint(HNSW index, float *vec, unsigned long int label);
-  int searchKnn(HNSW index, float *vec, int N, unsigned long int *result);
+  int searchKnn(HNSW index, float *vec, int N, unsigned long int *label, float *dist);
   void setEf(HNSW index, int ef);
 #ifdef __cplusplus
 }

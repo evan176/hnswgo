@@ -35,7 +35,7 @@ void addPoint(HNSW index, float *vec, unsigned long int label) {
         ((hnswlib::HierarchicalNSW<float>*)index)->addPoint(vec, label);
 }
 
-int searchKnn(HNSW index, float *vec, int N, unsigned long int *result) {
+int searchKnn(HNSW index, float *vec, int N, unsigned long int *label, float *dist) {
   std::priority_queue<std::pair<float, hnswlib::labeltype>> gt;
   try {
     gt = ((hnswlib::HierarchicalNSW<float>*)index)->searchKnn(vec, N);
@@ -47,7 +47,8 @@ int searchKnn(HNSW index, float *vec, int N, unsigned long int *result) {
   std::pair<float, hnswlib::labeltype> pair;
   for (int i = n - 1; i >= 0; i--) {
     pair = gt.top();
-    *(result+i) = pair.second;
+    *(dist+i) = pair.first;
+    *(label+i) = pair.second;
     gt.pop();
   }
   return n;

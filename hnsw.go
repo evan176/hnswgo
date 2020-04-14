@@ -6,7 +6,7 @@ package hnswgo
 // HNSW initHNSW(int dim, unsigned long int max_elements, int M, int ef_construction, int rand_seed, char stype);
 // HNSW loadHNSW(char *location, int dim, char stype);
 // void addPoint(HNSW index, float *vec, unsigned long int label);
-// int searchKnn(HNSW index, float *vec, int N, unsigned long int *result);
+// int searchKnn(HNSW index, float *vec, int N, unsigned long int *label, float *dist);
 // void setEf(HNSW index, int ef);
 import "C"
 import (
@@ -79,17 +79,20 @@ func (h *HNSW) AddPoint(vector []float32, label uint32) {
 	C.addPoint(h.index, (*C.float)(unsafe.Pointer(&vector[0])), C.ulong(label))
 }
 
-func (h *HNSW) SearchKNN(vector []float32, N int) []uint32 {
-	result := make([]C.ulong, N, N)
+func (h *HNSW) SearchKNN(vector []float32, N int) ([]uint32, []float32) {
+	Clabel := make([]C.ulong, N, N)
+	Cdist := make([]C.float, N, N)
 	if h.normalize {
 		vector = normalizeVector(vector)
 	}
-	numResult := int(C.searchKnn(h.index, (*C.float)(unsafe.Pointer(&vector[0])), C.int(N), &result[0]))
+	numResult := int(C.searchKnn(h.index, (*C.float)(unsafe.Pointer(&vector[0])), C.int(N), &Clabel[0], &Cdist[0]))
 	labels := make([]uint32, N)
+	dists := make([]float32, N)
 	for i := 0; i < numResult; i++ {
-		labels[i] = uint32(result[i])
+		labels[i] = uint32(Clabel[i])
+		dists[i] = float32(Cdist[i])
 	}
-	return labels[:numResult]
+	return labels[:numResult], dists[:numResult]
 }
 
 func (h *HNSW) SetEf(ef int) {
