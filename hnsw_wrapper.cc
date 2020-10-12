@@ -31,6 +31,11 @@ HNSW saveHNSW(HNSW index, char *location) {
   ((hnswlib::HierarchicalNSW<float>*)index)->saveIndex(location);
 }
 
+void freeHNSW(HNSW index) {
+  hnswlib::HierarchicalNSW<float>* ptr = (hnswlib::HierarchicalNSW<float>*) index;
+  delete ptr;
+}
+
 void addPoint(HNSW index, float *vec, unsigned long int label) {
         ((hnswlib::HierarchicalNSW<float>*)index)->addPoint(vec, label);
 }
