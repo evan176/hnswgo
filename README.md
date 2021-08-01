@@ -1,15 +1,26 @@
 # HNSWGO
 This is a golang interface of [hnswlib](https://github.com/nmslib/hnswlib). For more information, please follow [hnswlib](https://github.com/nmslib/hnswlib) and [Efficient and robust approximate nearest neighbor search using Hierarchical Navigable Small World graphs.](https://arxiv.org/abs/1603.09320).
 
-# Compile
+# Compile (Optional)
 ```bash
-go get github.com/evan176/hnswgo
-cd go/src/github.com/evan176/hnswgo && make
+git clone github.com/evan176/hnswgo
+cd hnswgo && make
+sudo cp libhnsw.so /usr/local/lib
+ldconfig
 ```
 # Usages
-Specify environment before compiling golang
+## Download shared library
 ```bash
+sudo wget https://github.com/evan176/hnswgo/releases/download/v1/libhnsw.so -P /usr/local/lib/
+ldconfig
+```
+## Export CGO variable
+```
 export CGO_CXXFLAGS=-std=c++11
+```
+## Go get
+```
+go get github.com/evan176/hnswgo
 ```
 
 | argument       | type | |
@@ -66,9 +77,9 @@ func main() {
         // Search vector with maximum 10 nearest neighbors
         h.setEf(15)
 	searchVector := randVector(dim)
-	labels := h.SearchKNN(searchVector, 10)
-	for _, l := range labels {
-		fmt.Printf("Nearest label: %d\n", l)
+	labels, dists := h.SearchKNN(searchVector, 10)
+	for i, l := range labels {
+		fmt.Printf("Nearest label: %d, dist: %f\n", l, dists[i])
 	}
 }
 ```
