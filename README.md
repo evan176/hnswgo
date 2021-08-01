@@ -9,16 +9,16 @@ sudo cp libhnsw.so /usr/local/lib
 ldconfig
 ```
 # Usages
-## Download shared library
+1. Download shared library
 ```bash
 sudo wget https://github.com/evan176/hnswgo/releases/download/v1/libhnsw.so -P /usr/local/lib/
 ldconfig
 ```
-## Export CGO variable
+2. Export CGO variable
 ```
 export CGO_CXXFLAGS=-std=c++11
 ```
-## Go get
+3. Go get
 ```
 go get github.com/evan176/hnswgo
 ```
