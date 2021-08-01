@@ -60,6 +60,10 @@ func (h *HNSW) Save(location string) {
 	C.free(unsafe.Pointer(pLocation))
 }
 
+func (h *HNSW) Free() {
+	C.freeHNSW(h.index)
+}
+
 func normalizeVector(vector []float32) []float32 {
 	var norm float32
 	for i := 0; i < len(vector); i++ {
