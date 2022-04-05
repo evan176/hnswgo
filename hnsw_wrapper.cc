@@ -29,6 +29,7 @@ HNSW loadHNSW(char *location, int dim, char stype) {
 
 HNSW saveHNSW(HNSW index, char *location) {
   ((hnswlib::HierarchicalNSW<float>*)index)->saveIndex(location);
+  return ((hnswlib::HierarchicalNSW<float>*)index);
 }
 
 void freeHNSW(HNSW index) {
