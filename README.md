@@ -3,7 +3,7 @@ This is a golang interface of [hnswlib](https://github.com/nmslib/hnswlib). For 
 
 # Compile (Optional)
 ```bash
-git clone github.com/evan176/hnswgo
+git clone github.com/evan176/hnswgo.git
 cd hnswgo && make
 sudo cp libhnsw.so /usr/local/lib
 ldconfig
