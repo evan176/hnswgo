@@ -2,14 +2,13 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-  typedef void* HNSW;
-  HNSW initHNSW(int dim, unsigned long int max_elements, int M, int ef_construction, int rand_seed, char stype);
-  HNSW loadHNSW(char *location, int dim, char stype);
-  HNSW saveHNSW(HNSW index, char *location);
-  void freeHNSW(HNSW index);
-  void addPoint(HNSW index, float *vec, unsigned long int label);
-  int searchKnn(HNSW index, float *vec, int N, unsigned long int *label, float *dist);
-  void setEf(HNSW index, int ef);
+    void initHNSW(int dim, unsigned long int maxElements, int M, int efConstruction, int randSeed, char simMetric);
+    //HNSW loadHNSW(char *location, int dim, char stype);
+    //HNSW saveHNSW(HNSW index, char *location);
+    void freeHNSW();
+    void addPoint(float *vector, unsigned long int label);
+    int searchKNN(float *vector, int k, unsigned long int *labels, float *distances);
+    void setEf(int ef);
 #ifdef __cplusplus
 }
 #endif
