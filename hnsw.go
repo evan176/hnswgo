@@ -7,32 +7,64 @@ package hnswgo
 */
 import "C"
 import (
+	"math"
 	"unsafe"
 )
 
-func New(dim int, m int, efConstruction int, randSeed int, maxElements uint32, spaceType string) {
-	if spaceType == "ip" {
-		C.initHNSW(C.int(dim), C.ulong(maxElements), C.int(m), C.int(efConstruction), C.int(randSeed), C.char('i'))
-	} else if spaceType == "cosine" {
-		C.initHNSW(C.int(dim), C.ulong(maxElements), C.int(m), C.int(efConstruction), C.int(randSeed), C.char('c'))
-	} else {
-		C.initHNSW(C.int(dim), C.ulong(maxElements), C.int(m), C.int(efConstruction), C.int(randSeed), C.char('l'))
+type Index struct {
+	index      C.HNSW
+	dimensions int
+	normalize  bool
+	spaceType  string
+}
+
+func normalize(vector []float32) { // normalize(v) = (1/|v|)*v
+	var magnitude float32
+	for i := range vector {
+		magnitude += vector[i] * vector[i]
+	}
+	magnitude = float32(math.Sqrt(float64(magnitude)))
+
+	for i := range vector {
+		vector[i] *= 1 / magnitude
 	}
 }
 
-func Free() {
-	C.freeHNSW()
+func New(dim int, m int, efConstruction int, randSeed int, maxElements uint32, spaceType string) *Index {
+	index := new(Index)
+	index.dimensions = dim
+	index.spaceType = spaceType
+	if spaceType == "ip" {
+		index.index = C.initHNSW(C.int(dim), C.ulong(maxElements), C.int(m), C.int(efConstruction), C.int(randSeed), C.char('i'))
+	} else if spaceType == "cosine" {
+		index.normalize = true
+		index.index = C.initHNSW(C.int(dim), C.ulong(maxElements), C.int(m), C.int(efConstruction), C.int(randSeed), C.char('c'))
+	} else {
+		index.index = C.initHNSW(C.int(dim), C.ulong(maxElements), C.int(m), C.int(efConstruction), C.int(randSeed), C.char('l'))
+	}
+	return index
 }
 
-func AddPoint(vector []float32, label uint32) {
-	C.addPoint((*C.float)(unsafe.Pointer(&vector[0])), C.ulong(label))
+func (i *Index) Free() {
+	C.freeHNSW(i.index)
 }
 
-func SearchKNN(vector []float32, k int) ([]uint32, []float32) {
+func (i *Index) AddPoint(vector []float32, label uint32) {
+	if i.normalize {
+		normalize(vector)
+	}
+	C.addPoint(i.index, (*C.float)(unsafe.Pointer(&vector[0])), C.ulong(label))
+}
+
+func (i *Index) SearchKNN(vector []float32, k int) ([]uint32, []float32) {
+	if i.normalize {
+		normalize(vector)
+	}
+
 	Clabel := make([]C.ulong, k, k)
 	Cdist := make([]C.float, k, k)
 
-	numResult := int(C.searchKNN((*C.float)(unsafe.Pointer(&vector[0])), C.int(k), &Clabel[0], &Cdist[0])) // perform the search
+	numResult := int(C.searchKNN(i.index, (*C.float)(unsafe.Pointer(&vector[0])), C.int(k), &Clabel[0], &Cdist[0])) // perform the search
 
 	labels := make([]uint32, k)
 	dists := make([]float32, k)
@@ -44,8 +76,8 @@ func SearchKNN(vector []float32, k int) ([]uint32, []float32) {
 	return labels[:numResult], dists[:numResult]
 }
 
-func SetEfConstruction(efConstruction int) {
-	C.setEf(C.int(efConstruction))
+func (i *Index) SetEfConstruction(efConstruction int) {
+	C.setEf(i.index, C.int(efConstruction))
 }
 
 //func Load(location string, dim int, spaceType string) *HNSW {
@@ -70,16 +102,4 @@ func SetEfConstruction(efConstruction int) {
 //	pLocation := C.CString(location)
 //	C.saveHNSW(h.index, pLocation)
 //	C.free(unsafe.Pointer(pLocation))
-//}
-
-//func normalizeVector(vector []float32) []float32 {
-//	var norm float32
-//	for i := 0; i < len(vector); i++ {
-//		norm += vector[i] * vector[i]
-//	}
-//	norm = 1.0 / (float32(math.Sqrt(float64(norm))) + 1e-15)
-//	for i := 0; i < len(vector); i++ {
-//		vector[i] = vector[i] * norm
-//	}
-//	return vector
 //}

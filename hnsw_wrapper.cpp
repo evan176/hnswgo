@@ -1,39 +1,21 @@
-#include <hnswlib/hnswlib.h>
-#include <hnsw_wrapper.h>
-#include <math.h>
-#include <stdlib.h>
+#include "hnswlib/hnswlib.h"
+#include "hnsw_wrapper.h"
 using namespace std;
 using namespace hnswlib;
 
-SpaceInterface<float> *vectorSpace;
-HierarchicalNSW<float> *hnswIndex;
-bool normalizeVectors = false;
-int spaceDimensions;
-
-void normalizeVec(float *vector) { // maybe vector normalization should be outsourced to Go? It's safer.
-    float magnitude = 0.0f;
-    for (int i = 0; i < spaceDimensions; i++) {
-        magnitude += vector[i] * vector[i];
-    }
-    magnitude = sqrt(magnitude);
-
-    for (int i = 0; i < spaceDimensions; i++) {
-        vector[i] *= 1 / magnitude;
-    }
-}
-
-void initHNSW(int dim, unsigned long int maxElements, int m, int efConstruction, int randSeed, char simMetric) {
+HNSW initHNSW(int dim, unsigned long int maxElements, int m, int efConstruction, int randSeed, char simMetric) {
+    SpaceInterface<float> *vectorSpace;
     if (simMetric == 'i') { // inner product
         vectorSpace = new InnerProductSpace(dim);
     }
     else if (simMetric == 'c') { // cosine (cosine is the same as IP when all vectors are normalized)
-        normalizeVectors = true;
-        spaceDimensions = dim;
+        //normalizeVectors = true;
+        //spaceDimensions = dim;
         vectorSpace = new InnerProductSpace(dim);
     } else { // default: L2
         vectorSpace = new L2Space(dim);
     }
-    hnswIndex = new HierarchicalNSW<float>(vectorSpace, maxElements, m, efConstruction, randSeed); // instantiate the hnsw index
+    return new HierarchicalNSW<float>(vectorSpace, maxElements, m, efConstruction, randSeed); // instantiate the hnsw index
 }
 
 //HNSW loadHNSW(char *location, int dim, char stype) {
@@ -52,24 +34,24 @@ void initHNSW(int dim, unsigned long int maxElements, int m, int efConstruction,
 //  return ((HierarchicalNSW<float>*)index);
 //}
 
-void freeHNSW() {
-    delete hnswIndex;
+void freeHNSW(HNSW hnswIndex) {
+    delete (HierarchicalNSW<float>*) hnswIndex;
 }
 
-void addPoint(float *vector, unsigned long int label) {
-    if (normalizeVectors)
-        normalizeVec(vector);
+void addPoint(HNSW hnswIndex, float *vector, unsigned long int label) {
+    //if (normalizeVectors)
+    //    normalizeVec(vector);
 
-    hnswIndex->addPoint(vector, label);
+    ((HierarchicalNSW<float>*) hnswIndex)->addPoint(vector, label);
 }
 
-int searchKNN(float *vector, int k, unsigned long int *labels, float *distances) {
-    if (normalizeVectors)
-        normalizeVec(vector);
+int searchKNN(HNSW hnswIndex, float *vector, int k, unsigned long int *labels, float *distances) {
+    //if (normalizeVectors)
+    //    normalizeVec(vector);
     
     priority_queue<pair<float, labeltype>> searchResults;
     try {
-        searchResults = hnswIndex->searchKnn(vector, k);
+        searchResults = ((HierarchicalNSW<float>*) hnswIndex)->searchKnn(vector, k);
     } catch (const exception e) { 
         return 0; // get better error visibility
     }
@@ -85,6 +67,6 @@ int searchKNN(float *vector, int k, unsigned long int *labels, float *distances)
     return n;
 }
 
-void setEf(int ef) {
-    hnswIndex->ef_ = ef;
+void setEf(HNSW hnswIndex, int ef) {
+    ((HierarchicalNSW<float>*) hnswIndex)->ef_ = ef;
 }
