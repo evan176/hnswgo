@@ -18,6 +18,11 @@ type Index struct {
 	spaceType  string
 }
 
+/*
+Normalizes a vector in place.
+
+@param vector: the vector to normalize in place
+*/
 func normalize(vector []float32) { // normalize(v) = (1/|v|)*v
 	var magnitude float32
 	for i := range vector {
@@ -30,6 +35,18 @@ func normalize(vector []float32) { // normalize(v) = (1/|v|)*v
 	}
 }
 
+/*
+Returns a reference to an instance of an HNSW index.
+
+@param dim:            	dimension of the vector space
+@param maxElements:    	index's vector storage capacity
+@param m:              	`m` parameter in the HNSW algorithm
+@param efConstruction: 	`efConstruction` parameter in the HNSW algorithm
+@param randSeed:       	random seed
+@param spaceType:      	similarity metric to use in the index
+
+@return 				a reference to an instance of an HNSW index
+*/
 func New(dim int, m int, efConstruction int, randSeed int, maxElements uint32, spaceType string) *Index {
 	index := new(Index)
 	index.dimensions = dim
@@ -45,17 +62,34 @@ func New(dim int, m int, efConstruction int, randSeed int, maxElements uint32, s
 	return index
 }
 
+/**
+ * Frees the HNSW index from memory.
+ */
 func (i *Index) Free() {
 	C.freeHNSW(i.index)
 }
 
-func (i *Index) AddPoint(vector []float32, label uint32) {
+/**
+ * Adds a vector to the HNSW index.
+ *
+ * @param vector:       the vector to add to the index
+ * @param label:        the vector's label
+ */
+func (i *Index) InsertVector(vector []float32, label uint32) {
 	if i.normalize {
 		normalize(vector)
 	}
-	C.addPoint(i.index, (*C.float)(unsafe.Pointer(&vector[0])), C.ulong(label))
+	C.insertVector(i.index, (*C.float)(unsafe.Pointer(&vector[0])), C.ulong(label))
 }
 
+/**
+ * Performs similarity search on the HNSW index.
+ *
+ * @param vector:       the query vector
+ * @param k:            the k value
+ *
+ * @return              the labels and distances of each of the nearest neighbors. Note: the size of both arrays can be < k if k > num of vectors in the index
+ */
 func (i *Index) SearchKNN(vector []float32, k int) ([]uint32, []float32) {
 	if i.normalize {
 		normalize(vector)
@@ -76,6 +110,11 @@ func (i *Index) SearchKNN(vector []float32, k int) ([]uint32, []float32) {
 	return labels[:numResult], dists[:numResult]
 }
 
+/**
+ * Set's the efConstruction parameter in the HNSW index.
+ *
+ * @param efConstruction: the new efConstruction parameter
+ */
 func (i *Index) SetEfConstruction(efConstruction int) {
 	C.setEf(i.index, C.int(efConstruction))
 }
