@@ -1,6 +1,7 @@
-package hnswgo
+package tests
 
 import (
+	"hnswgo"
 	"math"
 	"testing"
 
@@ -9,7 +10,7 @@ import (
 
 func TestNormalize(t *testing.T) {
 	vector := []float32{4, 5, 6}
-	normalize(vector)
+	hnswgo.Normalize(vector)
 	var magnitude float32
 	for i := range vector {
 		magnitude += vector[i] * vector[i]

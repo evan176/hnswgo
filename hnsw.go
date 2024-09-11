@@ -20,10 +20,11 @@ type Index struct {
 
 /*
 Normalizes a vector in place.
+Normalize(v) = (1/|v|)*v
 
-@param vector: the vector to normalize in place
+- vector: the vector to Normalize in place
 */
-func normalize(vector []float32) { // normalize(v) = (1/|v|)*v
+func Normalize(vector []float32) {
 	var magnitude float32
 	for i := range vector {
 		magnitude += vector[i] * vector[i]
@@ -31,21 +32,26 @@ func normalize(vector []float32) { // normalize(v) = (1/|v|)*v
 	magnitude = float32(math.Sqrt(float64(magnitude)))
 
 	for i := range vector {
-		vector[i] *= 1 / magnitude
+		vector[i] *= 1.0 / magnitude
 	}
 }
 
 /*
 Returns a reference to an instance of an HNSW index.
 
-@param dim:            	dimension of the vector space
-@param maxElements:    	index's vector storage capacity
-@param m:              	`m` parameter in the HNSW algorithm
-@param efConstruction: 	`efConstruction` parameter in the HNSW algorithm
-@param randSeed:       	random seed
-@param spaceType:      	similarity metric to use in the index
+- dim:            	dimension of the vector space
 
-@return 				a reference to an instance of an HNSW index
+- maxElements:    	index's vector storage capacity
+
+- m:              	`m` parameter in the HNSW algorithm
+
+- efConstruction: 	`efConstruction` parameter in the HNSW algorithm
+
+- randSeed:       	random seed
+
+- spaceType:      	similarity metric to use in the index
+
+Returns a reference to an instance of an HNSW index
 */
 func New(dim int, m int, efConstruction int, randSeed int, maxElements uint32, spaceType string) *Index {
 	index := new(Index)
@@ -62,37 +68,39 @@ func New(dim int, m int, efConstruction int, randSeed int, maxElements uint32, s
 	return index
 }
 
-/**
- * Frees the HNSW index from memory.
- */
+/*
+Frees the HNSW index from memory.
+*/
 func (i *Index) Free() {
 	C.freeHNSW(i.index)
 }
 
-/**
- * Adds a vector to the HNSW index.
- *
- * @param vector:       the vector to add to the index
- * @param label:        the vector's label
- */
+/*
+Adds a vector to the HNSW index.
+
+- vector:       the vector to add to the index
+
+- label:        the vector's label
+*/
 func (i *Index) InsertVector(vector []float32, label uint32) {
 	if i.normalize {
-		normalize(vector)
+		Normalize(vector)
 	}
 	C.insertVector(i.index, (*C.float)(unsafe.Pointer(&vector[0])), C.ulong(label))
 }
 
-/**
- * Performs similarity search on the HNSW index.
- *
- * @param vector:       the query vector
- * @param k:            the k value
- *
- * @return              the labels and distances of each of the nearest neighbors. Note: the size of both arrays can be < k if k > num of vectors in the index
- */
+/*
+Performs similarity search on the HNSW index.
+
+- vector:       the query vector
+
+- k:            the k value
+
+Returns the labels and distances of each of the nearest neighbors. Note: the size of both arrays can be < k if k > num of vectors in the index
+*/
 func (i *Index) SearchKNN(vector []float32, k int) ([]uint32, []float32) {
 	if i.normalize {
-		normalize(vector)
+		Normalize(vector)
 	}
 
 	Clabel := make([]C.ulong, k, k)
@@ -110,11 +118,11 @@ func (i *Index) SearchKNN(vector []float32, k int) ([]uint32, []float32) {
 	return labels[:numResult], dists[:numResult]
 }
 
-/**
- * Set's the efConstruction parameter in the HNSW index.
- *
- * @param efConstruction: the new efConstruction parameter
- */
+/*
+Set's the efConstruction parameter in the HNSW index.
+
+- efConstruction: the new efConstruction parameter
+*/
 func (i *Index) SetEfConstruction(efConstruction int) {
 	C.setEf(i.index, C.int(efConstruction))
 }
