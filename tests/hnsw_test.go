@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"hnswgo"
 	"math"
 	"testing"
 
