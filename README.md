@@ -1,6 +1,6 @@
 # HNSWGO
 
-### A Go and C++ wrapper for [hnswlib](https://github.com/nmslib/hnswlib) 📦 
+### A Go wrapper for [hnswlib](https://github.com/nmslib/hnswlib) 📦 
 
 ## Usage
 
