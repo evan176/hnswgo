@@ -1,4 +1,4 @@
-module hnswgo
+module github.com/Eigen-DB/hnswgo
 
 go 1.20
 

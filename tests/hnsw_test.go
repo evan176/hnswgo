@@ -1,9 +1,10 @@
 package tests
 
 import (
-	"hnswgo"
 	"math"
 	"testing"
+
+	"github.com/Eigen-DB/hnswgo"
 
 	"github.com/stretchr/testify/assert"
 )
