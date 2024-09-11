@@ -1,7 +1,5 @@
 #include "hnswlib/hnswlib.h"
 #include "hnsw_wrapper.h"
-using namespace std;
-using namespace hnswlib;
 
 /**
  * Instantiates and returns an HNSW index.
@@ -16,16 +14,16 @@ using namespace hnswlib;
  * @return                  instance of a HNSW index
  */
 HNSW initHNSW(int dim, unsigned long int maxElements, int m, int efConstruction, int randSeed, char spaceType) {
-    SpaceInterface<float> *vectorSpace;
+    hnswlib::SpaceInterface<float> *vectorSpace;
     if (spaceType == 'i') { // inner product
-        vectorSpace = new InnerProductSpace(dim);
+        vectorSpace = new hnswlib::InnerProductSpace(dim);
     }
     else if (spaceType == 'c') { // cosine (cosine is the same as IP when all vectors are normalized)
-        vectorSpace = new InnerProductSpace(dim);
+        vectorSpace = new hnswlib::InnerProductSpace(dim);
     } else { // default: L2
-        vectorSpace = new L2Space(dim);
+        vectorSpace = new hnswlib::L2Space(dim);
     }
-    return new HierarchicalNSW<float>(vectorSpace, maxElements, m, efConstruction, randSeed); // instantiate the hnsw index
+    return new hnswlib::HierarchicalNSW<float>(vectorSpace, maxElements, m, efConstruction, randSeed); // instantiate the hnsw index
 }
 
 /**
@@ -34,7 +32,7 @@ HNSW initHNSW(int dim, unsigned long int maxElements, int m, int efConstruction,
  * @param hnswIndex: HNSW index to free
  */
 void freeHNSW(HNSW hnswIndex) {
-    delete (HierarchicalNSW<float>*) hnswIndex;
+    delete (hnswlib::HierarchicalNSW<float>*) hnswIndex;
 }
 
 /**
@@ -45,7 +43,7 @@ void freeHNSW(HNSW hnswIndex) {
  * @param label:        the vector's label
  */
 void insertVector(HNSW hnswIndex, float *vector, unsigned long int label) {
-    ((HierarchicalNSW<float>*) hnswIndex)->addPoint(vector, label);
+    ((hnswlib::HierarchicalNSW<float>*) hnswIndex)->addPoint(vector, label);
 }
 
 /**
@@ -60,15 +58,15 @@ void insertVector(HNSW hnswIndex, float *vector, unsigned long int label) {
  * @return              the number of nearest neighbors found (num of nn <= k since it's possible for k > num of vectors in the index)
  */
 int searchKNN(HNSW hnswIndex, float *vector, int k, unsigned long int *labels, float *distances) {
-    priority_queue<pair<float, labeltype>> searchResults;
+    std::priority_queue<std::pair<float, hnswlib::labeltype>> searchResults;
     try {
-        searchResults = ((HierarchicalNSW<float>*) hnswIndex)->searchKnn(vector, k);
-    } catch (const exception e) { 
+        searchResults = ((hnswlib::HierarchicalNSW<float>*) hnswIndex)->searchKnn(vector, k);
+    } catch (const std::exception e) { 
         return 0; // get better error visibility
     }
 
     int n = searchResults.size();
-    pair<float, labeltype> pair;
+    std::pair<float, hnswlib::labeltype> pair;
     for (int i = n - 1; i >= 0; i--) {
         pair = searchResults.top();
         distances[i] = pair.first;
@@ -85,7 +83,7 @@ int searchKNN(HNSW hnswIndex, float *vector, int k, unsigned long int *labels, f
  * @param ef:           the new efConstruction parameter
  */
 void setEf(HNSW hnswIndex, int ef) {
-    ((HierarchicalNSW<float>*) hnswIndex)->ef_ = ef;
+    ((hnswlib::HierarchicalNSW<float>*) hnswIndex)->ef_ = ef;
 }
 
 
