@@ -2,6 +2,12 @@
 
 ### A Go wrapper for [hnswlib](https://github.com/nmslib/hnswlib) 📦 
 
+## Installation
+
+```
+go get github.com/Eigen-DB/hnswgo
+```
+
 ## Usage
 
 ```go
@@ -9,7 +15,7 @@ package examples
 
 import (
 	"fmt"
-	"hnswgo"
+	"github.com/Eigen-DB/hnswgo"
 	"time"
 )
 
