@@ -7,6 +7,8 @@ package hnswgo
 */
 import "C"
 import (
+	"errors"
+	"fmt"
 	"math"
 	"unsafe"
 )
@@ -14,8 +16,27 @@ import (
 type Index struct {
 	index      C.HNSW
 	dimensions int
+	size       uint32
 	normalize  bool
 	spaceType  string
+}
+
+// Returns the last error message. Returns nil if there is no error message.
+func peekLastError() error {
+	err := C.peekLastErrorMsg()
+	if err == nil {
+		return nil
+	}
+	return errors.New(C.GoString(err))
+}
+
+// Returns and clears the last error message. Returns nil if there is no error message.
+func getLastError() error {
+	err := C.getLastErrorMsg()
+	if err == nil {
+		return nil
+	}
+	return errors.New(C.GoString(err))
 }
 
 /*
@@ -51,12 +72,27 @@ Returns a reference to an instance of an HNSW index.
 
 - spaceType:      	similarity metric to use in the index
 
-Returns a reference to an instance of an HNSW index
+Returns an instance of an HNSW index, or an error if there was a problem initializing the index.
 */
-func New(dim int, m int, efConstruction int, randSeed int, maxElements uint32, spaceType string) *Index {
+func New(dim int, m int, efConstruction int, randSeed int, maxElements uint32, spaceType string) (*Index, error) {
+	if dim < 1 {
+		return nil, errors.New("dimension must be >= 1")
+	}
+	if maxElements < 1 {
+		return nil, errors.New("max elements must be >= 1")
+	}
+	if m < 2 {
+		return nil, errors.New("m must be >= 2")
+	}
+	if efConstruction < 0 {
+		return nil, errors.New("efConstruction must be >= 0")
+	}
+
 	index := new(Index)
 	index.dimensions = dim
 	index.spaceType = spaceType
+	index.size = maxElements
+
 	if spaceType == "ip" {
 		index.index = C.initHNSW(C.int(dim), C.ulong(maxElements), C.int(m), C.int(efConstruction), C.int(randSeed), C.char('i'))
 	} else if spaceType == "cosine" {
@@ -65,7 +101,12 @@ func New(dim int, m int, efConstruction int, randSeed int, maxElements uint32, s
 	} else {
 		index.index = C.initHNSW(C.int(dim), C.ulong(maxElements), C.int(m), C.int(efConstruction), C.int(randSeed), C.char('l'))
 	}
-	return index
+
+	if index.index == nil {
+		return nil, getLastError()
+	}
+
+	return index, getLastError()
 }
 
 /*
@@ -82,11 +123,16 @@ Adds a vector to the HNSW index.
 
 - label:        the vector's label
 */
-func (i *Index) InsertVector(vector []float32, label uint32) {
+func (i *Index) InsertVector(vector []float32, label uint32) error {
+	if len(vector) != i.dimensions {
+		return fmt.Errorf("the vector you are trying to insert is %d-dimensional whereas your index is %d-dimensional", len(vector), i.dimensions)
+	}
+
 	if i.normalize {
 		Normalize(vector)
 	}
 	C.insertVector(i.index, (*C.float)(unsafe.Pointer(&vector[0])), C.ulong(label))
+	return getLastError()
 }
 
 /*
@@ -98,7 +144,14 @@ Performs similarity search on the HNSW index.
 
 Returns the labels and distances of each of the nearest neighbors. Note: the size of both arrays can be < k if k > num of vectors in the index
 */
-func (i *Index) SearchKNN(vector []float32, k int) ([]uint32, []float32) {
+func (i *Index) SearchKNN(vector []float32, k int) ([]uint32, []float32, error) {
+	if len(vector) != i.dimensions {
+		return nil, nil, fmt.Errorf("the query vector is %d-dimensional whereas your index is %d-dimensional", len(vector), i.dimensions)
+	}
+	if k < 1 || uint32(k) > i.size {
+		return nil, nil, fmt.Errorf("1 <= k <= index max size")
+	}
+
 	if i.normalize {
 		Normalize(vector)
 	}
@@ -108,6 +161,10 @@ func (i *Index) SearchKNN(vector []float32, k int) ([]uint32, []float32) {
 
 	numResult := int(C.searchKNN(i.index, (*C.float)(unsafe.Pointer(&vector[0])), C.int(k), &Clabel[0], &Cdist[0])) // perform the search
 
+	if numResult < 0 {
+		return nil, nil, fmt.Errorf("an error occured with the HNSW algorithm: %s", getLastError())
+	}
+
 	labels := make([]uint32, k)
 	dists := make([]float32, k)
 	for i := 0; i < numResult; i++ {
@@ -115,7 +172,7 @@ func (i *Index) SearchKNN(vector []float32, k int) ([]uint32, []float32) {
 		dists[i] = float32(Cdist[i])
 	}
 
-	return labels[:numResult], dists[:numResult]
+	return labels[:numResult], dists[:numResult], getLastError()
 }
 
 /*
@@ -123,8 +180,12 @@ Set's the efConstruction parameter in the HNSW index.
 
 - efConstruction: the new efConstruction parameter
 */
-func (i *Index) SetEfConstruction(efConstruction int) {
+func (i *Index) SetEfConstruction(efConstruction int) error {
+	if efConstruction < 0 {
+		return errors.New("efConstruction must be >= 0")
+	}
 	C.setEf(i.index, C.int(efConstruction))
+	return getLastError()
 }
 
 //func Load(location string, dim int, spaceType string) *HNSW {
