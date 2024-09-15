@@ -4,8 +4,6 @@
 
 ## Installation
 
-test
-
 ```
 go get github.com/Eigen-DB/hnswgo
 ```
