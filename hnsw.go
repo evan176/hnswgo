@@ -122,6 +122,8 @@ Adds a vector to the HNSW index.
 - vector:       the vector to add to the index
 
 - label:        the vector's label
+
+Returns an error if one occured.
 */
 func (i *Index) InsertVector(vector []float32, label uint32) error {
 	if len(vector) != i.dimensions {
@@ -142,7 +144,7 @@ Performs similarity search on the HNSW index.
 
 - k:            the k value
 
-Returns the labels and distances of each of the nearest neighbors. Note: the size of both arrays can be < k if k > num of vectors in the index
+Returns the labels and distances of each of the nearest neighbors, and an error if one occured. Note: the size of both arrays can be < k if k > num of vectors in the index
 */
 func (i *Index) SearchKNN(vector []float32, k int) ([]uint32, []float32, error) {
 	if len(vector) != i.dimensions {
@@ -179,6 +181,8 @@ func (i *Index) SearchKNN(vector []float32, k int) ([]uint32, []float32, error) 
 Set's the efConstruction parameter in the HNSW index.
 
 - efConstruction: the new efConstruction parameter
+
+Returns an error if one occured.
 */
 func (i *Index) SetEfConstruction(efConstruction int) error {
 	if efConstruction < 0 {

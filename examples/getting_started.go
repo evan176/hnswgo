@@ -1,16 +1,3 @@
-# HNSWGO
-
-### A Go wrapper for [hnswlib](https://github.com/nmslib/hnswlib) 📦 
-
-## Installation
-
-```
-go get github.com/Eigen-DB/hnswgo
-```
-
-## Usage
-
-```go
 package examples
 
 import (
@@ -76,6 +63,3 @@ func main() {
 		fmt.Printf("vector %d is %f units from query vector\n", nnLabels[i], nnDists[i])
 	}
 }
-```
-
-Visualize the vectors in this example [here](https://www.desmos.com/calculator/n47sh892rk).
