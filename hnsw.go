@@ -22,12 +22,12 @@ func New(dim, M, efConstruction, randSeed int, maxElements uint64, spaceType str
 	hnsw.dim = dim
 	hnsw.spaceType = spaceType
 	if spaceType == "ip" {
-		hnsw.index = C.initHNSW(C.int(dim), C.ulong(maxElements), C.int(M), C.int(efConstruction), C.int(randSeed), C.char('i'))
+		hnsw.index = C.initHNSW(C.int(dim), C.ulonglong(maxElements), C.int(M), C.int(efConstruction), C.int(randSeed), C.char('i'))
 	} else if spaceType == "cosine" {
 		hnsw.normalize = true
-		hnsw.index = C.initHNSW(C.int(dim), C.ulong(maxElements), C.int(M), C.int(efConstruction), C.int(randSeed), C.char('i'))
+		hnsw.index = C.initHNSW(C.int(dim), C.ulonglong(maxElements), C.int(M), C.int(efConstruction), C.int(randSeed), C.char('i'))
 	} else {
-		hnsw.index = C.initHNSW(C.int(dim), C.ulong(maxElements), C.int(M), C.int(efConstruction), C.int(randSeed), C.char('l'))
+		hnsw.index = C.initHNSW(C.int(dim), C.ulonglong(maxElements), C.int(M), C.int(efConstruction), C.int(randSeed), C.char('l'))
 	}
 	return &hnsw
 }
@@ -76,11 +76,11 @@ func (h *HNSW) AddPoint(vector []float32, label uint64) {
 	if h.normalize {
 		vector = normalizeVector(vector)
 	}
-	C.addPoint(h.index, (*C.float)(unsafe.Pointer(&vector[0])), C.ulong(label))
+	C.addPoint(h.index, (*C.float)(unsafe.Pointer(&vector[0])), C.ulonglong(label))
 }
 
 func (h *HNSW) SearchKNN(vector []float32, N int) ([]uint64, []float32) {
-	Clabel := make([]C.ulong, N, N)
+	Clabel := make([]C.ulonglong, N, N)
 	Cdist := make([]C.float, N, N)
 	if h.normalize {
 		vector = normalizeVector(vector)
