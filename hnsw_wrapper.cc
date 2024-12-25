@@ -5,7 +5,7 @@
 #include <thread>
 #include <atomic>
 
-HNSW initHNSW(int dim, unsigned long int max_elements, int M, int ef_construction, int rand_seed, char stype) {
+HNSW initHNSW(int dim, unsigned long long int max_elements, int M, int ef_construction, int rand_seed, char stype) {
   hnswlib::SpaceInterface<float> *space;
   if (stype == 'i') {
     space = new hnswlib::InnerProductSpace(dim);
@@ -37,11 +37,11 @@ void freeHNSW(HNSW index) {
   delete ptr;
 }
 
-void addPoint(HNSW index, float *vec, unsigned long int label) {
+void addPoint(HNSW index, float *vec, unsigned long long int label) {
         ((hnswlib::HierarchicalNSW<float>*)index)->addPoint(vec, label);
 }
 
-int searchKnn(HNSW index, float *vec, int N, unsigned long int *label, float *dist) {
+int searchKnn(HNSW index, float *vec, int N, unsigned long long int *label, float *dist) {
   std::priority_queue<std::pair<float, hnswlib::labeltype>> gt;
   try {
     gt = ((hnswlib::HierarchicalNSW<float>*)index)->searchKnn(vec, N);

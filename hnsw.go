@@ -17,7 +17,7 @@ type HNSW struct {
 	normalize bool
 }
 
-func New(dim, M, efConstruction, randSeed int, maxElements uint32, spaceType string) *HNSW {
+func New(dim, M, efConstruction, randSeed int, maxElements uint64, spaceType string) *HNSW {
 	var hnsw HNSW
 	hnsw.dim = dim
 	hnsw.spaceType = spaceType
@@ -72,24 +72,24 @@ func normalizeVector(vector []float32) []float32 {
 	return vector
 }
 
-func (h *HNSW) AddPoint(vector []float32, label uint32) {
+func (h *HNSW) AddPoint(vector []float32, label uint64) {
 	if h.normalize {
 		vector = normalizeVector(vector)
 	}
 	C.addPoint(h.index, (*C.float)(unsafe.Pointer(&vector[0])), C.ulong(label))
 }
 
-func (h *HNSW) SearchKNN(vector []float32, N int) ([]uint32, []float32) {
+func (h *HNSW) SearchKNN(vector []float32, N int) ([]uint64, []float32) {
 	Clabel := make([]C.ulong, N, N)
 	Cdist := make([]C.float, N, N)
 	if h.normalize {
 		vector = normalizeVector(vector)
 	}
 	numResult := int(C.searchKnn(h.index, (*C.float)(unsafe.Pointer(&vector[0])), C.int(N), &Clabel[0], &Cdist[0]))
-	labels := make([]uint32, N)
+	labels := make([]uint64, N)
 	dists := make([]float32, N)
 	for i := 0; i < numResult; i++ {
-		labels[i] = uint32(Clabel[i])
+		labels[i] = uint64(Clabel[i])
 		dists[i] = float32(Cdist[i])
 	}
 	return labels[:numResult], dists[:numResult]
